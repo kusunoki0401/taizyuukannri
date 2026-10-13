@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>有料老人ホーム 体重・BMI管理システム</title>
+  <title>看護管理システム</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -72,10 +72,10 @@
         </div>
         <div>
           <h1 class="text-base sm:text-lg font-bold tracking-tight leading-tight flex items-center gap-2">
-            体重・BMI管理システム
-            <span class="text-[10px] sm:text-xs font-normal bg-emerald-700/80 px-2 py-0.5 rounded-full border border-emerald-600">栄養管理・早期検知</span>
+            看護管理システム
+            <span class="text-[10px] sm:text-xs font-normal bg-emerald-700/80 px-2 py-0.5 rounded-full border border-emerald-600">排泄・体重・栄養統合管理</span>
           </h1>
-          <p class="text-[11px] sm:text-xs text-emerald-200">有料老人ホーム ケアマネジャー・看護・介護共有</p>
+          <p class="text-[11px] sm:text-xs text-emerald-200">有料老人ホーム 看護・介護・ケアマネ共有</p>
         </div>
       </div>
 
@@ -122,8 +122,23 @@
       </div>
     </div>
 
-    <!-- Month Selector & Global Actions -->
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 sm:p-5 mb-4 sm:mb-6">
+    <!-- Main Module Navigation Tabs -->
+    <div class="flex items-center gap-2 mb-4 no-print">
+      <button type="button" id="navTabWeight" class="nav-module-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition shadow-sm bg-emerald-800 text-white shadow-emerald-900/10 active:scale-95">
+        <i data-lucide="scale" class="w-4 h-4"></i>
+        <span>体重・栄養管理</span>
+      </button>
+      <button type="button" id="navTabBowel" class="nav-module-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 active:scale-95">
+        <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-600"></i>
+        <span>排便・下剤管理</span>
+        <span id="bowelAlertHeaderPill" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500 text-white animate-pulse">要対応 <span id="bowelAlertHeaderCount">0</span>名</span>
+      </button>
+    </div>
+
+    <!-- Weight Management View Container -->
+    <div id="weightManagementView">
+      <!-- Month Selector & Global Actions -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 sm:p-5 mb-4 sm:mb-6">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
         
         <!-- Month and Filter -->
@@ -259,6 +274,153 @@
         <p class="font-medium">該当する利用者がいません</p>
       </div>
     </section>
+    </div><!-- End weightManagementView -->
+
+    <!-- Bowel Management View Container -->
+    <div id="bowelManagementView" class="hidden space-y-4 sm:space-y-6">
+      
+      <!-- Top Alert & KPI Cards -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <!-- 3日以上不排便 (最重要リスク) -->
+        <div id="bowelCard3DaysAlert" class="bg-rose-50 border-2 border-rose-200 hover:border-rose-300 rounded-2xl p-3.5 sm:p-4 shadow-sm cursor-pointer transition active:scale-98">
+          <div class="flex items-center justify-between text-rose-700 text-xs mb-1 font-bold">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+              3日以上不排便
+            </span>
+            <span class="text-[10px] bg-rose-200 text-rose-800 px-1.5 py-0.5 rounded font-bold">下剤・処置検討</span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-rose-700" id="bowelCount3Days">0 <span class="text-xs font-normal text-rose-600">名</span></div>
+          <p class="text-[11px] text-rose-600/90 mt-1">宿便・イレウス警戒（クリックで絞込）</p>
+        </div>
+
+        <!-- 2日不排便 (観察対象) -->
+        <div id="bowelCard2DaysAlert" class="bg-amber-50 border border-amber-200 hover:border-amber-300 rounded-2xl p-3.5 sm:p-4 shadow-sm cursor-pointer transition active:scale-98">
+          <div class="flex items-center justify-between text-amber-700 text-xs mb-1 font-bold">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+              2日不排便
+            </span>
+            <span class="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded font-bold">要観察</span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-amber-700" id="bowelCount2Days">0 <span class="text-xs font-normal text-amber-600">名</span></div>
+          <p class="text-[11px] text-amber-600/90 mt-1">水分促し・活動確認（クリックで絞込）</p>
+        </div>
+
+        <!-- 本日頓服下剤 服用者 -->
+        <div id="bowelCardMedsAlert" class="bg-purple-50 border border-purple-200 hover:border-purple-300 rounded-2xl p-3.5 sm:p-4 shadow-sm cursor-pointer transition active:scale-98">
+          <div class="flex items-center justify-between text-purple-700 text-xs mb-1 font-bold">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="pill" class="w-4 h-4 text-purple-600"></i>
+              当月頓服下剤
+            </span>
+            <span class="text-[10px] bg-purple-200 text-purple-800 px-1.5 py-0.5 rounded font-bold">服用履歴</span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-purple-700" id="bowelCountMeds">0 <span class="text-xs font-normal text-purple-600">名</span></div>
+          <p class="text-[11px] text-purple-600/90 mt-1">プルゼニド・ピコ等使用（クリックで絞込）</p>
+        </div>
+
+        <!-- 本日排便状況 -->
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 sm:p-4 shadow-sm">
+          <div class="flex items-center justify-between text-emerald-800 text-xs mb-1 font-bold">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+              本日の排便確認
+            </span>
+            <span class="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-bold">直近推移</span>
+          </div>
+          <div class="text-2xl sm:text-3xl font-extrabold text-emerald-800" id="bowelCountTodayOk">0 <span class="text-xs font-normal text-emerald-600">名</span></div>
+          <p class="text-[11px] text-emerald-700 mt-1" id="bowelMeasuredSummary">対象者 36名中</p>
+        </div>
+      </section>
+
+      <!-- Bowel Tool Bar -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3 sm:p-5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
+          
+          <div class="flex flex-wrap items-center gap-2.5 sm:gap-4">
+            <!-- Bowel Month Selector -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">対象年月</label>
+              <div class="relative flex items-center">
+                <select id="bowelMonthSelect" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-sm sm:text-base rounded-xl px-3.5 py-2 pr-9 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition shadow-sm appearance-none cursor-pointer">
+                  <!-- Dynamically populated -->
+                </select>
+                <i data-lucide="calendar" class="w-4 h-4 text-slate-500 absolute right-3 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Floor Filter -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">フロア</label>
+              <div class="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                <button type="button" data-floor="all" class="bowel-floor-btn px-3 py-1.5 rounded-lg bg-white text-emerald-800 shadow-sm transition">全員</button>
+                <button type="button" data-floor="2F" class="bowel-floor-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">2F</button>
+                <button type="button" data-floor="3F" class="bowel-floor-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">3F</button>
+              </div>
+            </div>
+
+            <!-- Filter Status Tab -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">表示絞込</label>
+              <div class="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                <button type="button" data-bowel-filter="all" class="bowel-filter-tab px-3 py-1.5 rounded-lg bg-white text-emerald-800 shadow-sm transition">全員 (<span id="bowelTabCountAll">0</span>)</button>
+                <button type="button" data-bowel-filter="alert" class="bowel-filter-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
+                  <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-rose-500"></i>
+                  要対応 (<span id="bowelTabCountAlert">0</span>)
+                </button>
+                <button type="button" data-bowel-filter="meds" class="bowel-filter-tab px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center gap-1">
+                  <i data-lucide="pill" class="w-3.5 h-3.5 text-purple-500"></i>
+                  下剤使用 (<span id="bowelTabCountMeds">0</span>)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-wrap items-center gap-2 self-start lg:self-end">
+            <button type="button" id="openBatchBowelBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+              <i data-lucide="check-square" class="w-4 h-4"></i>
+              <span>今日（または指定日）の排便を一括記録</span>
+            </button>
+            <button type="button" id="printBowelSheetBtn" class="bg-slate-700 hover:bg-slate-800 text-white font-medium px-3 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95 shadow-sm" title="紙の排便管理表を印刷">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">台帳印刷</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="font-bold text-slate-700 flex items-center gap-1"><i data-lucide="info" class="w-3.5 h-3.5 text-emerald-600"></i> 凡例・入力方法:</span>
+            <span class="flex items-center gap-1"><span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">〇</span> 普通便</span>
+            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">少1〜5</span> 少量（正の字）</span>
+            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[10px]">💊</span> 頓服下剤</span>
+            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 font-bold text-[10px]">水/泥</span> 下痢・軟便</span>
+            <span class="text-slate-400">※各日付のマスをクリックすると直接記録・編集できます</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Monthly Bowel Matrix Table -->
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto touch-scroll">
+          <table class="w-full text-xs text-slate-700 border-collapse" id="bowelMatrixTable">
+            <thead id="bowelMatrixThead" class="bg-slate-800 text-white sticky top-0 z-20">
+              <!-- Dynamically generated with 1..31 days -->
+            </thead>
+            <tbody id="bowelMatrixTbody" class="divide-y divide-slate-200">
+              <!-- Dynamically generated rows -->
+            </tbody>
+          </table>
+        </div>
+        <div id="bowelEmptyState" class="hidden py-12 text-center text-slate-400">
+          <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+          <p class="font-medium">該当する利用者がいません</p>
+        </div>
+      </section>
+
+    </div><!-- End Bowel Management View -->
   </main>
 
   <div id="batchInputModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-4">
@@ -443,6 +605,200 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single Bowel Modal (個別日・マトリクスクリック入力) -->
+  <div id="singleBowelModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="px-5 py-3.5 bg-slate-800 text-white flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-sm sm:text-base flex items-center gap-2">
+            <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-400"></i>
+            <span id="singleBowelModalTitle">排便・下剤の記録</span>
+          </h3>
+          <p class="text-xs text-slate-300">
+            <span id="singleBowelResidentInfo" class="font-semibold text-emerald-300"></span> | 
+            記録日: <span id="singleBowelDateDisplay" class="font-bold underline text-white"></span>
+          </p>
+        </div>
+        <button id="closeSingleBowelModalBtn" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="singleBowelForm" class="p-4 sm:p-6 space-y-4 text-xs sm:text-sm">
+        <input type="hidden" id="singleBowelRoomInput">
+        <input type="hidden" id="singleBowelDateInput">
+
+        <!-- 便の性状・状態 -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1.5">排便状態の選択 <span class="text-rose-500">*</span></label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <label class="bowel-type-label cursor-pointer flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-emerald-400 bg-white text-center transition">
+              <input type="radio" name="singleBowelType" value="normal" class="hidden">
+              <span class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-sm mb-1">〇</span>
+              <span class="font-bold text-slate-800">普通便</span>
+              <span class="text-[10px] text-slate-400">良便・適量</span>
+            </label>
+
+            <label class="bowel-type-label cursor-pointer flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-amber-400 bg-white text-center transition">
+              <input type="radio" name="singleBowelType" value="small" class="hidden">
+              <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs mb-1">少</span>
+              <span class="font-bold text-slate-800">少量便</span>
+              <span class="text-[10px] text-slate-400">正の字カウント</span>
+            </label>
+
+            <label class="bowel-type-label cursor-pointer flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-sky-400 bg-white text-center transition">
+              <input type="radio" name="singleBowelType" value="diarrhea" class="hidden">
+              <span class="w-7 h-7 rounded-lg bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-xs mb-1">水/泥</span>
+              <span class="font-bold text-slate-800">軟便・水様</span>
+              <span class="text-[10px] text-slate-400">下痢・泥状</span>
+            </label>
+
+            <label class="bowel-type-label cursor-pointer flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-slate-400 bg-white text-center transition">
+              <input type="radio" name="singleBowelType" value="none" class="hidden">
+              <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 font-bold flex items-center justify-center text-xs mb-1">-</span>
+              <span class="font-bold text-slate-800">排便なし</span>
+              <span class="text-[10px] text-slate-400">観察継続</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 少量時の回数（正の字） -->
+        <div id="singleBowelCountSection" class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+          <label class="block font-bold text-amber-900 mb-1">少量排便の回数（正の字）</label>
+          <div class="flex items-center gap-2">
+            <select id="singleBowelCountSelect" class="bg-white border border-amber-300 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+              <option value="1">少 1回（一）</option>
+              <option value="2">少 2回（Ｔ）</option>
+              <option value="3">少 3回（上）</option>
+              <option value="4">少 4回（止）</option>
+              <option value="5">少 5回以上（正）</option>
+            </select>
+            <span class="text-[11px] text-amber-700">※現場の「正の字カウント」に対応</span>
+          </div>
+        </div>
+
+        <!-- 頓服下剤の服薬記録 -->
+        <div class="p-3 bg-purple-50/70 border border-purple-200 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-purple-900 flex items-center gap-1.5">
+              <i data-lucide="pill" class="w-4 h-4 text-purple-600"></i>
+              頓服薬（下剤・浣腸・坐薬）の服用記録
+            </label>
+            <span class="text-[10px] text-purple-700 bg-purple-200 px-2 py-0.5 rounded font-bold">排便ない日の対策</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] text-slate-600 mb-0.5">常用頓服薬のクイック選択:</label>
+              <select id="singleBowelMedPreset" class="w-full bg-white border border-purple-300 rounded-lg px-2.5 py-1.5 text-xs text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <option value="">-- なし / 自由入力 --</option>
+                <option value="プルゼニド 1T">プルゼニド 1T</option>
+                <option value="プルゼニド 2T">プルゼニド 2T</option>
+                <option value="ピコスルファート 5滴">ピコスルファート 5滴</option>
+                <option value="ピコスルファート 10滴">ピコスルファート 10滴</option>
+                <option value="酸化マグネシウム 1包">酸化マグネシウム 1包</option>
+                <option value="テレミンソフト坐薬 1個">テレミンソフト坐薬 1個</option>
+                <option value="新レシカルボン坐薬 1個">新レシカルボン坐薬 1個</option>
+                <option value="グリセリン浣腸 30ml">グリセリン浣腸 30ml</option>
+                <option value="グリセリン浣腸 60ml">グリセリン浣腸 60ml</option>
+                <option value="モビコール 1包">モビコール 1包</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-600 mb-0.5">服用内容（自由記載・修正）:</label>
+              <input type="text" id="singleBowelMedInput" placeholder="例: プルゼニド2T 20時内服" class="w-full bg-white border border-purple-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- 状態・特記事項メモ -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">特記事項・様子メモ（腹部膨満・腹痛・処置等）</label>
+          <input type="text" id="singleBowelMemoInput" placeholder="例: 腹部膨満感あり、温罨法実施。夕食後に排便あり。" class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+          <button type="button" id="clearSingleBowelBtn" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 hover:bg-rose-50 rounded transition">
+            記録をクリア（削除）
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" id="cancelSingleBowelBtn" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 font-medium">キャンセル</button>
+            <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-sm flex items-center gap-1.5">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>記録を保存</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Batch Bowel Modal (日別一括入力) -->
+  <div id="batchBowelModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="px-5 py-3.5 bg-emerald-800 text-white flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="font-bold text-base sm:text-lg flex items-center gap-2">
+            <i data-lucide="check-square" class="w-5 h-5 text-emerald-300"></i>
+            排便・下剤の日別一括入力
+          </h2>
+          <p class="text-xs text-emerald-200">紙の記録用紙を見ながら、居室順に全利用者の排便状況を素早くチェック・保存できます</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-emerald-100 font-medium whitespace-nowrap">記録日:</label>
+          <input type="date" id="batchBowelDateInput" class="bg-white/95 text-slate-800 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-300 border border-emerald-600">
+          <button id="closeBatchBowelModalBtn" class="p-1 rounded-lg hover:bg-emerald-700 transition text-emerald-200 hover:text-white ml-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Action Toolbar -->
+      <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-slate-600">一括設定:</span>
+          <button type="button" id="batchBowelSetAllNormalBtn" class="px-2.5 py-1 rounded bg-white hover:bg-emerald-50 text-emerald-800 font-bold border border-emerald-300 transition">全未入力を「〇普通便」にする</button>
+          <button type="button" id="batchBowelSetAllNoneBtn" class="px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 transition">全未入力を「排便なし」にする</button>
+        </div>
+        <div class="text-slate-500 text-[11px]">
+          ※「少」選択時は回数を指定できます / 頓服薬欄はピコ・プルゼニド等をワンタップ入力可能
+        </div>
+      </div>
+
+      <!-- Table Body -->
+      <div class="overflow-y-auto flex-1 p-3 sm:p-5 touch-scroll">
+        <table class="w-full text-xs sm:text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500 font-semibold text-left">
+              <th class="py-2 px-2 w-16 text-center">居室</th>
+              <th class="py-2 px-3 min-w-[120px]">氏名</th>
+              <th class="py-2 px-3 text-center min-w-[110px]">前日までの状況</th>
+              <th class="py-2 px-3 text-center min-w-[200px]">当日の排便状況</th>
+              <th class="py-2 px-3 min-w-[180px]">頓服薬 (下剤等)</th>
+              <th class="py-2 px-3 min-w-[140px]">特記事項</th>
+            </tr>
+          </thead>
+          <tbody id="batchBowelTableBody" class="divide-y divide-slate-100">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs text-slate-500">
+          合計 <span id="batchBowelTotalCount" class="font-bold text-slate-700">0</span> 名の記録をスプレッドシート原本へ保存します
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="cancelBatchBowelModalBtn" class="px-4 py-2 border border-slate-300 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-xs sm:text-sm">キャンセル</button>
+          <button type="button" id="saveBatchBowelModalBtn" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md active:scale-95 flex items-center gap-1.5">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>この日の記録を一括保存</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1264,14 +1620,15 @@
     }
 
     
-    // スプレッドシート同期用のメタデータ（体重履歴・入居日・介護度等）のシリアライズ／復元ヘルパー
+    // スプレッドシート同期用のメタデータ（体重履歴・排便記録・入居日・介護度等）のシリアライズ／復元ヘルパー
     function packResidentMeta(resident) {
       const meta = {
         gender: resident.gender || "",
         careLevel: resident.careLevel || "",
         admissionDate: resident.admissionDate || "",
         notes: resident.rawNotes || "",
-        weights: resident.weights || {}
+        weights: resident.weights || {},
+        bowel: resident.bowel || {}
       };
       return "__META__" + JSON.stringify(meta);
     }
@@ -1289,6 +1646,7 @@
           if (meta.admissionDate) resident.admissionDate = meta.admissionDate;
           if (meta.notes !== undefined) resident.rawNotes = meta.notes;
           if (meta.weights) resident.weights = { ...resident.weights, ...meta.weights };
+          if (meta.bowel) resident.bowel = { ...(resident.bowel || {}), ...meta.bowel };
           return;
         } catch (e) {
           console.warn("メタデータ復元エラー:", e);
@@ -1303,7 +1661,7 @@
       const map = {};
       // 1. まず施設台帳マスタ（全35名）を展開
       BUILTIN_RESIDENT_MASTER.forEach(b => {
-        map[String(b.room)] = { ...b, rawNotes: b.notes || "", weights: { ...b.weights } };
+        map[String(b.room)] = { ...b, rawNotes: b.notes || "", weights: { ...b.weights }, bowel: {} };
       });
 
       // 2. targetList（スプレッドシート）から身長・体重記録・更新設定を引き継ぐ
@@ -1316,6 +1674,7 @@
               unpackResidentMeta(map[roomKey], t.notes);
             }
             if (t.weights) map[roomKey].weights = { ...map[roomKey].weights, ...t.weights };
+            if (t.bowel) map[roomKey].bowel = { ...(map[roomKey].bowel || {}), ...t.bowel };
             // スプレッドシートに保存されている身長を最優先反映（0や未設定は未登録=null扱い）
             if (t.height != null) {
               const numH = parseFloat(t.height);
@@ -1328,8 +1687,9 @@
             // スプレッドシート上で新規追加された利用者
             const numH = t.height != null ? parseFloat(t.height) : null;
             const validH = (!isNaN(numH) && numH > 0) ? numH : null;
-            const newRes = { ...t, height: validH, rawNotes: t.notes || "", weights: { ...t.weights } };
+            const newRes = { ...t, height: validH, rawNotes: t.notes || "", weights: { ...t.weights }, bowel: {} };
             if (t.notes) unpackResidentMeta(newRes, t.notes);
+            if (t.bowel) newRes.bowel = { ...newRes.bowel, ...t.bowel };
             map[roomKey] = newRes;
           }
         });
@@ -1353,6 +1713,7 @@
       }
       residentsList = mergeWithBuiltinMaster(parsed);
       renderMainTable();
+      renderBowelMatrix();
 
       if (!currentGasUrl) {
         updateConnectionStatus("offline", "オフライン（URL未設定）");
@@ -1386,6 +1747,7 @@
           updateConnectionStatus("online", `スプレッドシート同期完了 (${residentsList.length}名)`);
           hideDiagnosticsBanner();
           renderMainTable();
+          renderBowelMatrix();
           showToast(`スプレッドシートと同期しました (${residentsList.length}名)`);
         } else {
           throw new Error(json.message || "スプレッドシート側でエラーが返却されました");
@@ -1396,6 +1758,7 @@
         updateConnectionStatus("offline", "スプレッドシート未接続");
         showDiagnosticsBanner(`スプレッドシート同期不可: ${err.message}`);
         renderMainTable();
+        renderBowelMatrix();
       } finally {
         if (syncIcon) syncIcon.classList.remove("pulse-sync");
       }
@@ -2016,6 +2379,641 @@
       URL.revokeObjectURL(url);
       showToast("CSVファイルを出力しました");
     }
+    /* ==========================================================================
+       排便・下剤管理モジュール ロジック群 (Bowel & Laxative Management)
+       ========================================================================== */
+    let currentBowelMonth = "2026-10";
+    let activeBowelFloor = "all";
+    let activeBowelFilter = "all";
+    let singleBowelTargetResident = null;
+
+    // 指定基準日 (YYYY-MM-DD) における利用者の不排便継続日数（便秘日数）を計算
+    // 普通便(normal)または少量便(small)、あるいは記録ありの日を「排便あり」とみなす
+    function calculateConstipationDays(resident, targetDateStr) {
+      if (!resident || !targetDateStr) return 0;
+      const bowelData = resident.bowel || {};
+      const targetDate = new Date(targetDateStr);
+
+      let daysCount = 0;
+      // 最大30日前まで遡って探索
+      for (let i = 0; i <= 30; i++) {
+        const checkDate = new Date(targetDate);
+        checkDate.setDate(checkDate.getDate() - i);
+        const yyyy = checkDate.getFullYear();
+        const mm = String(checkDate.getMonth() + 1).padStart(2, "0");
+        const dd = String(checkDate.getDate()).padStart(2, "0");
+        const dStr = `${yyyy}-${mm}-${dd}`;
+
+        const rec = bowelData[dStr];
+        if (rec && (rec.type === "normal" || rec.type === "small" || rec.type === "diarrhea" || rec.hasBowel)) {
+          // 排便があった日が見つかった
+          return i;
+        }
+      }
+      return 30; // 30日以上排便記録なし
+    }
+
+    // 指定日 (YYYY-MM-DD) における排便記録オブジェクトを取得
+    function getResidentBowelRecord(resident, dateStr) {
+      if (!resident || !resident.bowel) return null;
+      return resident.bowel[dateStr] || null;
+    }
+
+    // 排便管理画面の月選択肢初期化
+    function initBowelMonthSelect() {
+      const select = document.getElementById("bowelMonthSelect");
+      if (!select) return;
+      select.innerHTML = "";
+
+      const startYear = 2025;
+      const startMonth = 8;
+      const now = new Date();
+      const futureDate = new Date(now.getFullYear(), now.getMonth() + 2, 1);
+      let endYear = futureDate.getFullYear();
+      let endMonth = futureDate.getMonth() + 1;
+      if (endYear < 2026 || (endYear === 2026 && endMonth < 10)) {
+        endYear = 2026;
+        endMonth = 12;
+      }
+
+      let y = endYear;
+      let m = endMonth;
+      while (y > startYear || (y === startYear && m >= startMonth)) {
+        const key = `${y}-${String(m).padStart(2, "0")}`;
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = formatReiwaMonth(key, true);
+        select.appendChild(opt);
+
+        m--;
+        if (m < 1) { m = 12; y--; }
+      }
+
+      // デフォルトは体重タブの選択年月または当月
+      select.value = currentSelectedMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      currentBowelMonth = select.value;
+    }
+
+    // 月間排便マトリクス表のヘッダーおよびセル描画
+    function renderBowelMatrix() {
+      const thead = document.getElementById("bowelMatrixThead");
+      const tbody = document.getElementById("bowelMatrixTbody");
+      const emptyState = document.getElementById("bowelEmptyState");
+      if (!thead || !tbody) return;
+
+      const [year, month] = currentBowelMonth.split("-").map(Number);
+      const daysInMonth = new Date(year, month, 0).getDate(); // 当月の日数 (28..31)
+
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+      // 1. ヘッダー生成
+      let theadHtml = `
+        <tr class="text-[11px] font-semibold border-b border-slate-700 select-none">
+          <th class="py-2.5 px-2 w-14 text-center sticky left-0 z-30 bg-slate-800 shadow-[1px_0_0_0_#334155]">居室</th>
+          <th class="py-2.5 px-3 min-w-[110px] text-left sticky left-14 z-30 bg-slate-800 shadow-[2px_0_0_0_#334155]">氏名</th>
+          <th class="py-2.5 px-2 min-w-[70px] text-center sticky left-[166px] z-30 bg-slate-800 shadow-[2px_0_0_0_#334155] text-amber-300">不排便</th>
+      `;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const dateObj = new Date(year, month - 1, d);
+        const dayOfWeek = dateObj.getDay(); // 0:日, 6:土
+        const isSun = dayOfWeek === 0;
+        const isSat = dayOfWeek === 6;
+        const isToday = (dStr === todayStr);
+
+        let dayColorClass = "text-slate-300";
+        if (isSun) dayColorClass = "text-rose-300 bg-rose-950/40";
+        else if (isSat) dayColorClass = "text-sky-300 bg-sky-950/40";
+        if (isToday) dayColorClass = "text-emerald-300 bg-emerald-950/60 font-extrabold ring-1 ring-emerald-400";
+
+        const dayOfWeekLabels = ["日", "月", "火", "水", "木", "金", "土"];
+        theadHtml += `
+          <th class="py-1 px-1 min-w-[34px] max-w-[38px] text-center border-l border-slate-700/60 ${dayColorClass}">
+            <div class="text-[11px] leading-tight">${d}</div>
+            <div class="text-[9px] font-normal opacity-80">${dayOfWeekLabels[dayOfWeek]}</div>
+          </th>
+        `;
+      }
+      theadHtml += `</tr>`;
+      thead.innerHTML = theadHtml;
+
+      // 2. 利用者行データの生成
+      tbody.innerHTML = "";
+      const activeResidents = residentsList.filter(res => isResidentActiveInMonth(res, currentBowelMonth));
+
+      // 集計用カウンター
+      let count3Days = 0;
+      let count2Days = 0;
+      let countMeds = 0;
+      let countTodayOk = 0;
+
+      // 基準日（当月なら今日、過去月なら月末）
+      const evalBaseDateStr = todayStr.startsWith(currentBowelMonth)
+        ? todayStr
+        : `${year}-${String(month).padStart(2, "0")}-${String(daysInMonth).padStart(2, "0")}`;
+
+      // 各利用者の状態計算
+      const residentStats = activeResidents.map(res => {
+        const constipationDays = calculateConstipationDays(res, evalBaseDateStr);
+        if (constipationDays >= 3) count3Days++;
+        else if (constipationDays === 2) count2Days++;
+
+        // 当月下剤服用歴があるか
+        let hasMedsThisMonth = false;
+        let todayHasBowel = false;
+        const bowelData = res.bowel || {};
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          const rec = bowelData[dStr];
+          if (rec && rec.med && rec.med.trim().length > 0) hasMedsThisMonth = true;
+          if (dStr === todayStr && rec && (rec.type === "normal" || rec.type === "small" || rec.type === "diarrhea")) {
+            todayHasBowel = true;
+          }
+        }
+        if (hasMedsThisMonth) countMeds++;
+        if (todayHasBowel) countTodayOk++;
+
+        return {
+          resident: res,
+          constipationDays,
+          hasMedsThisMonth,
+          todayHasBowel
+        };
+      });
+
+      // KPIカードの数値反映
+      document.getElementById("bowelCount3Days").innerHTML = `${count3Days} <span class="text-xs font-normal text-rose-600">名</span>`;
+      document.getElementById("bowelCount2Days").innerHTML = `${count2Days} <span class="text-xs font-normal text-amber-600">名</span>`;
+      document.getElementById("bowelCountMeds").innerHTML = `${countMeds} <span class="text-xs font-normal text-purple-600">名</span>`;
+      document.getElementById("bowelCountTodayOk").innerHTML = `${countTodayOk} <span class="text-xs font-normal text-emerald-600">名</span>`;
+      document.getElementById("bowelMeasuredSummary").textContent = `対象者 ${activeResidents.length}名中`;
+
+      // ヘッダーバッジ反映
+      const headerPill = document.getElementById("bowelAlertHeaderPill");
+      const headerCount = document.getElementById("bowelAlertHeaderCount");
+      const totalAlerts = count3Days + count2Days;
+      if (totalAlerts > 0) {
+        headerPill.classList.remove("hidden");
+        headerCount.textContent = totalAlerts;
+      } else {
+        headerPill.classList.add("hidden");
+      }
+
+      // タブ内バッジ反映
+      document.getElementById("bowelTabCountAll").textContent = activeResidents.length;
+      document.getElementById("bowelTabCountAlert").textContent = totalAlerts;
+      document.getElementById("bowelTabCountMeds").textContent = countMeds;
+
+      // 3. 絞り込み処理
+      let filteredStats = residentStats;
+
+      // フロアフィルター (2F: 200番台, 3F: 300番台)
+      if (activeBowelFloor === "2F") {
+        filteredStats = filteredStats.filter(s => String(s.resident.room).startsWith("2"));
+      } else if (activeBowelFloor === "3F") {
+        filteredStats = filteredStats.filter(s => String(s.resident.room).startsWith("3"));
+      }
+
+      // アラートフィルター
+      if (activeBowelFilter === "alert") {
+        filteredStats = filteredStats.filter(s => s.constipationDays >= 2);
+      } else if (activeBowelFilter === "meds") {
+        filteredStats = filteredStats.filter(s => s.hasMedsThisMonth);
+      }
+
+      if (filteredStats.length === 0) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+      emptyState.classList.add("hidden");
+
+      // ソート（居室順）
+      filteredStats.sort((a, b) => String(a.resident.room).localeCompare(String(b.resident.room), undefined, { numeric: true }));
+
+      // 行の生成
+      filteredStats.forEach(stat => {
+        const res = stat.resident;
+        const cDays = stat.constipationDays;
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-200 text-slate-800";
+
+        // 不排便日数バッジ
+        let cBadgeHtml = `<span class="text-slate-400 font-mono text-xs">0日</span>`;
+        if (cDays >= 3) {
+          cBadgeHtml = `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white animate-pulse" title="3日以上排便なし: 宿便・下剤検討">${cDays}日⚠️</span>`;
+        } else if (cDays === 2) {
+          cBadgeHtml = `<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white" title="2日排便なし: 要観察">${cDays}日</span>`;
+        } else if (cDays === 1) {
+          cBadgeHtml = `<span class="text-slate-600 font-medium text-xs">1日</span>`;
+        }
+
+        let cellsHtml = `
+          <td class="py-2 px-2 text-center font-bold text-slate-700 bg-white sticky left-0 z-10 shadow-[1px_0_0_0_#e2e8f0]">${res.room}</td>
+          <td class="py-2 px-3 bg-white sticky left-14 z-10 shadow-[2px_0_0_0_#e2e8f0]">
+            <div class="font-bold text-slate-900 truncate max-w-[100px] sm:max-w-[130px] cursor-pointer hover:text-emerald-700" onclick="openResidentDetailModalFromBowel('${res.room}')" title="カルテ詳細を開く">${res.name}</div>
+            <div class="text-[10px] text-slate-400">${res.careLevel || ''}</div>
+          </td>
+          <td class="py-2 px-2 text-center bg-slate-50 sticky left-[166px] z-10 shadow-[2px_0_0_0_#e2e8f0]">${cBadgeHtml}</td>
+        `;
+
+        // 日付別マトリクスセル
+        for (let d = 1; d <= daysInMonth; d++) {
+          const dStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          const rec = res.bowel?.[dStr];
+          const isToday = (dStr === todayStr);
+
+          let cellContent = `<span class="text-slate-200 text-xs">・</span>`;
+          let bgClass = isToday ? "bg-emerald-50/40" : "";
+
+          if (rec) {
+            const hasMed = rec.med && rec.med.trim().length > 0;
+            const medPill = hasMed ? `<span class="text-[9px] text-purple-700 block leading-none font-extrabold" title="${rec.med}">💊</span>` : "";
+
+            if (rec.type === "normal") {
+              cellContent = `
+                <div class="flex flex-col items-center justify-center">
+                  <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold flex items-center justify-center text-xs leading-none shadow-sm">〇</span>
+                  ${medPill}
+                </div>
+              `;
+              bgClass = "bg-emerald-50/20";
+            } else if (rec.type === "small") {
+              const cnt = rec.count || 1;
+              cellContent = `
+                <div class="flex flex-col items-center justify-center">
+                  <span class="px-1 py-0.5 rounded bg-amber-100 text-amber-900 font-extrabold text-[10px] leading-none shadow-sm" title="少量 ${cnt}回">少${cnt}</span>
+                  ${medPill}
+                </div>
+              `;
+              bgClass = "bg-amber-50/20";
+            } else if (rec.type === "diarrhea") {
+              cellContent = `
+                <div class="flex flex-col items-center justify-center">
+                  <span class="px-1 py-0.5 rounded bg-sky-100 text-sky-900 font-extrabold text-[9px] leading-none shadow-sm" title="軟便・水様便">水/泥</span>
+                  ${medPill}
+                </div>
+              `;
+              bgClass = "bg-sky-50/20";
+            } else if (rec.type === "none") {
+              cellContent = `
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-slate-400 font-bold text-xs leading-none">-</span>
+                  ${medPill}
+                </div>
+              `;
+            } else if (hasMed) {
+              // 排便なしで頓服薬のみ服用
+              cellContent = `
+                <div class="flex flex-col items-center justify-center">
+                  <span class="text-slate-300 text-xs leading-none">-</span>
+                  ${medPill}
+                </div>
+              `;
+              bgClass = "bg-purple-50/30";
+            }
+          }
+
+          cellsHtml += `
+            <td class="py-1 px-0.5 text-center border-l border-slate-200 cursor-pointer hover:bg-emerald-100/70 transition ${bgClass}"
+                data-room="${res.room}" data-date="${dStr}"
+                onclick="handleBowelCellClick('${res.room}', '${dStr}')"
+                title="${res.name} (${dStr})\nクリックして記録・編集">
+              ${cellContent}
+            </td>
+          `;
+        }
+
+        tr.innerHTML = cellsHtml;
+        tbody.appendChild(tr);
+      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // 利用者名クリックで体重詳細モーダル（カルテ）を表示するショートカット
+    function openResidentDetailModalFromBowel(room) {
+      const res = residentsList.find(r => String(r.room) === String(room));
+      if (res) openResidentDetailModal(res);
+    }
+
+    // 単一日セルクリック時の個別入力モーダル起動
+    function handleBowelCellClick(room, dateStr) {
+      const res = residentsList.find(r => String(r.room) === String(room));
+      if (!res) return;
+
+      singleBowelTargetResident = res;
+      const rec = getResidentBowelRecord(res, dateStr) || {};
+
+      document.getElementById("singleBowelRoomInput").value = room;
+      document.getElementById("singleBowelDateInput").value = dateStr;
+      document.getElementById("singleBowelResidentInfo").textContent = `${res.room}号室 ${res.name}`;
+      document.getElementById("singleBowelDateDisplay").textContent = formatReiwaDate(dateStr);
+
+      // ラジオボタンの選択復元
+      const radios = document.getElementsByName("singleBowelType");
+      let selectedType = rec.type || "normal"; // デフォルトは普通便
+      if (!rec.type && !rec.med && !rec.memo) {
+        selectedType = "normal"; // 新規クリック時は〇をデフォルト
+      }
+      radios.forEach(r => {
+        r.checked = (r.value === selectedType);
+        updateBowelTypeRadioStyle(r);
+      });
+
+      // 少量カウント
+      const countSelect = document.getElementById("singleBowelCountSelect");
+      countSelect.value = rec.count ? String(rec.count) : "1";
+      document.getElementById("singleBowelCountSection").style.display = (selectedType === "small") ? "block" : "none";
+
+      // 頓服下剤
+      const medInput = document.getElementById("singleBowelMedInput");
+      const medPreset = document.getElementById("singleBowelMedPreset");
+      medInput.value = rec.med || "";
+      medPreset.value = "";
+
+      // 特記メモ
+      document.getElementById("singleBowelMemoInput").value = rec.memo || "";
+
+      document.getElementById("singleBowelModal").classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // 単一排便記録フォームの保存処理
+    async function saveSingleBowelRecord(e) {
+      e.preventDefault();
+      if (!singleBowelTargetResident) return;
+
+      const room = document.getElementById("singleBowelRoomInput").value;
+      const dateStr = document.getElementById("singleBowelDateInput").value;
+      const selectedType = document.querySelector('input[name="singleBowelType"]:checked')?.value || "normal";
+      const count = (selectedType === "small") ? parseInt(document.getElementById("singleBowelCountSelect").value, 10) : 1;
+      const med = document.getElementById("singleBowelMedInput").value.trim();
+      const memo = document.getElementById("singleBowelMemoInput").value.trim();
+
+      if (!singleBowelTargetResident.bowel) singleBowelTargetResident.bowel = {};
+
+      // 記録オブジェクトの作成
+      singleBowelTargetResident.bowel[dateStr] = {
+        type: selectedType,
+        count: count,
+        med: med,
+        memo: memo,
+        updatedAt: new Date().toISOString()
+      };
+
+      // オフラインキャッシュ保存とマトリクス即座再描画
+      localStorage.setItem(STORAGE_KEY_OFFLINE_DATA, JSON.stringify(residentsList));
+      renderBowelMatrix();
+      document.getElementById("singleBowelModal").classList.add("hidden");
+
+      const typeLabel = selectedType === "normal" ? "普通便(〇)" : (selectedType === "small" ? `少量便(${count}回)` : (selectedType === "diarrhea" ? "軟便・水様" : "排便なし"));
+      showToast(`${singleBowelTargetResident.room}号室 ${formatReiwaDate(dateStr)}: ${typeLabel} を保存しました`);
+
+      // スプレッドシート(GAS)へ永続保存
+      syncResidentBowelToGas(singleBowelTargetResident);
+    }
+
+    // 単一排便記録のクリア（削除）
+    async function clearSingleBowelRecord() {
+      if (!singleBowelTargetResident) return;
+      const dateStr = document.getElementById("singleBowelDateInput").value;
+      if (!confirm(`${singleBowelTargetResident.room}号室 ${formatReiwaDate(dateStr)} の排便記録を削除しますか？`)) return;
+
+      if (singleBowelTargetResident.bowel && singleBowelTargetResident.bowel[dateStr]) {
+        delete singleBowelTargetResident.bowel[dateStr];
+        localStorage.setItem(STORAGE_KEY_OFFLINE_DATA, JSON.stringify(residentsList));
+        renderBowelMatrix();
+        document.getElementById("singleBowelModal").classList.add("hidden");
+        showToast("排便記録を削除しました");
+        syncResidentBowelToGas(singleBowelTargetResident);
+      }
+    }
+
+    // 日別一括入力モーダルの表示
+    function openBatchBowelModal() {
+      const modal = document.getElementById("batchBowelModal");
+      const dateInput = document.getElementById("batchBowelDateInput");
+      const tbody = document.getElementById("batchBowelTableBody");
+
+      // 日付初期設定（今日、または当月の1日）
+      const todayStr = new Date().toISOString().split("T")[0];
+      if (todayStr.startsWith(currentBowelMonth)) {
+        dateInput.value = todayStr;
+      } else {
+        dateInput.value = `${currentBowelMonth}-01`;
+      }
+
+      renderBatchBowelRows();
+      modal.classList.remove("hidden");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // 日別一括入力モーダル内のテーブル行描画
+    function renderBatchBowelRows() {
+      const tbody = document.getElementById("batchBowelTableBody");
+      const dateVal = document.getElementById("batchBowelDateInput").value;
+      tbody.innerHTML = "";
+
+      const activeResidents = residentsList.filter(res => isResidentActiveInMonth(res, currentBowelMonth));
+      const sorted = activeResidents.sort((a, b) => String(a.room).localeCompare(String(b.room), undefined, { numeric: true }));
+      document.getElementById("batchBowelTotalCount").textContent = sorted.length;
+
+      sorted.forEach(res => {
+        const rec = getResidentBowelRecord(res, dateVal) || {};
+        const cDays = calculateConstipationDays(res, dateVal);
+
+        let prevStatusBadge = `<span class="text-xs text-slate-500">順調 (0日)</span>`;
+        if (cDays >= 3) {
+          prevStatusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">不排便 ${cDays}日⚠️</span>`;
+        } else if (cDays === 2) {
+          prevStatusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">不排便 2日</span>`;
+        } else if (cDays === 1) {
+          prevStatusBadge = `<span class="text-xs text-slate-600">昨日なし (1日)</span>`;
+        }
+
+        const currentType = rec.type || "";
+        const currentCount = rec.count || 1;
+        const currentMed = rec.med || "";
+        const currentMemo = rec.memo || "";
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-2 px-2 text-center font-bold text-slate-700">${res.room}</td>
+          <td class="py-2 px-3 font-semibold text-slate-900">${res.name}</td>
+          <td class="py-2 px-3 text-center">${prevStatusBadge}</td>
+          <td class="py-2 px-3 text-center">
+            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+              <label class="cursor-pointer px-2 py-1 rounded-lg border text-xs font-bold transition flex items-center gap-1 ${currentType === 'normal' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}">
+                <input type="radio" name="batchBowelType_${res.room}" value="normal" class="hidden batch-type-radio" ${currentType === 'normal' ? 'checked' : ''}>
+                <span>〇 普通</span>
+              </label>
+
+              <label class="cursor-pointer px-2 py-1 rounded-lg border text-xs font-bold transition flex items-center gap-1 ${currentType === 'small' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}">
+                <input type="radio" name="batchBowelType_${res.room}" value="small" class="hidden batch-type-radio" ${currentType === 'small' ? 'checked' : ''}>
+                <span>少</span>
+                <select class="batch-count-select bg-white text-slate-800 border border-slate-300 rounded text-[10px] py-0.5 px-1 ml-0.5" data-room="${res.room}">
+                  <option value="1" ${currentCount === 1 ? 'selected' : ''}>1回</option>
+                  <option value="2" ${currentCount === 2 ? 'selected' : ''}>2回</option>
+                  <option value="3" ${currentCount === 3 ? 'selected' : ''}>3回</option>
+                  <option value="4" ${currentCount === 4 ? 'selected' : ''}>4回</option>
+                  <option value="5" ${currentCount >= 5 ? 'selected' : ''}>5回</option>
+                </select>
+              </label>
+
+              <label class="cursor-pointer px-2 py-1 rounded-lg border text-xs font-bold transition flex items-center gap-1 ${currentType === 'diarrhea' ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}">
+                <input type="radio" name="batchBowelType_${res.room}" value="diarrhea" class="hidden batch-type-radio" ${currentType === 'diarrhea' ? 'checked' : ''}>
+                <span>水/泥</span>
+              </label>
+
+              <label class="cursor-pointer px-2 py-1 rounded-lg border text-xs font-medium transition flex items-center gap-1 ${currentType === 'none' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-500 border-slate-300 hover:bg-slate-100'}">
+                <input type="radio" name="batchBowelType_${res.room}" value="none" class="hidden batch-type-radio" ${currentType === 'none' ? 'checked' : ''}>
+                <span>なし</span>
+              </label>
+            </div>
+          </td>
+          <td class="py-2 px-3">
+            <div class="flex items-center gap-1">
+              <input type="text" data-room="${res.room}" value="${currentMed}" placeholder="例: プルゼニド1T" class="batch-med-input w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-purple-500">
+              <button type="button" class="batch-med-quick-btn text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-900 px-1.5 py-1 rounded border border-purple-200 whitespace-nowrap font-bold" data-room="${res.room}" title="ピコ/プルゼニド補完">薬</button>
+            </div>
+          </td>
+          <td class="py-2 px-3">
+            <input type="text" data-room="${res.room}" value="${currentMemo}" placeholder="特記・様子" class="batch-memo-input w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // ラジオボタンの動的ハイライト切り替えリスナー
+      tbody.querySelectorAll(".batch-type-radio").forEach(radio => {
+        radio.addEventListener("change", (e) => {
+          const row = e.target.closest("tr");
+          row.querySelectorAll(".batch-type-radio").forEach(r => {
+            const label = r.closest("label");
+            if (r.checked) {
+              if (r.value === "normal") label.className = "cursor-pointer px-2 py-1 rounded-lg border text-xs font-bold transition flex items-center gap-1 bg-emerald-600 text-white border-emerald-600";
+              else if (r.value === "small") label.className = "cursor-pointer px-2 py-1 rounded-lg border text-xs font-bold transition flex items-center gap-1 bg-amber-500 text-white border-amber-500";
+              else if (r.value === "diarrhea") label.className = "cursor-pointer px-2 py-1 rounded-lg border text-xs font-bold transition flex items-center gap-1 bg-sky-600 text-white border-sky-600";
+              else if (r.value === "none") label.className = "cursor-pointer px-2 py-1 rounded-lg border text-xs font-medium transition flex items-center gap-1 bg-slate-700 text-white border-slate-700";
+            } else {
+              label.className = "cursor-pointer px-2 py-1 rounded-lg border text-xs font-semibold transition flex items-center gap-1 bg-white text-slate-700 border-slate-300 hover:bg-slate-100";
+            }
+          });
+        });
+      });
+
+      // クイック薬候補ボタン
+      tbody.querySelectorAll(".batch-med-quick-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const rRoom = btn.dataset.room;
+          const input = tbody.querySelector(`.batch-med-input[data-room="${rRoom}"]`);
+          if (input) {
+            const current = input.value.trim();
+            if (!current) input.value = "プルゼニド 2T";
+            else if (current.includes("プルゼニド")) input.value = "ピコスルファート 10滴";
+            else if (current.includes("ピコ")) input.value = "グリセリン浣腸 30ml";
+            else input.value = "";
+          }
+        });
+      });
+    }
+
+    // 日別一括入力の一括保存処理
+    async function saveBatchBowelInputs() {
+      const dateVal = document.getElementById("batchBowelDateInput").value;
+      if (!dateVal) {
+        showToast("記録日を選択してください", "warning");
+        return;
+      }
+
+      const activeResidents = residentsList.filter(res => isResidentActiveInMonth(res, currentBowelMonth));
+      let updatedCount = 0;
+
+      activeResidents.forEach(res => {
+        const checkedRadio = document.querySelector(`input[name="batchBowelType_${res.room}"]:checked`);
+        const medInput = document.querySelector(`.batch-med-input[data-room="${res.room}"]`);
+        const countSelect = document.querySelector(`.batch-count-select[data-room="${res.room}"]`);
+        const memoInput = document.querySelector(`.batch-memo-input[data-room="${res.room}"]`);
+
+        const type = checkedRadio ? checkedRadio.value : "";
+        const med = medInput ? medInput.value.trim() : "";
+        const count = countSelect ? parseInt(countSelect.value, 10) : 1;
+        const memo = memoInput ? memoInput.value.trim() : "";
+
+        // 何らかの入力がある場合のみ記録更新
+        if (type || med || memo) {
+          if (!res.bowel) res.bowel = {};
+          res.bowel[dateVal] = {
+            type: type || (med ? "none" : "normal"),
+            count: count,
+            med: med,
+            memo: memo,
+            updatedAt: new Date().toISOString()
+          };
+          updatedCount++;
+        }
+      });
+
+      localStorage.setItem(STORAGE_KEY_OFFLINE_DATA, JSON.stringify(residentsList));
+      renderBowelMatrix();
+      document.getElementById("batchBowelModal").classList.add("hidden");
+      showToast(`${formatReiwaDate(dateVal)}: ${updatedCount}名分の排便記録を一括保存しました`);
+
+      // スプレッドシート(GAS)へ全更新者のメタデータを一括送信
+      syncAllBowelRecordsToGas(activeResidents);
+    }
+
+    // スプレッドシート(GAS)へ単一利用者の排便・メタデータを永続保存
+    async function syncResidentBowelToGas(resident) {
+      if (!currentGasUrl || !resident) return;
+      try {
+        const payload = {
+          room: resident.room,
+          name: resident.name,
+          height: resident.height,
+          notes: packResidentMeta(resident)
+        };
+        await fetch(currentGasUrl, {
+          method: "POST",
+          redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "saveResident", resident: payload })
+        });
+      } catch (e) {
+        console.warn("排便GAS同期エラー:", e);
+      }
+    }
+
+    // 一括保存時のバックグラウンド同期
+    async function syncAllBowelRecordsToGas(residents) {
+      if (!currentGasUrl || !Array.isArray(residents)) return;
+      try {
+        // 並列バッチ保存
+        for (const res of residents) {
+          syncResidentBowelToGas(res);
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    // 単一排便モーダル内のラジオボタンスタイル更新
+    function updateBowelTypeRadioStyle(radio) {
+      const labels = document.querySelectorAll(".bowel-type-label");
+      labels.forEach(lbl => {
+        const r = lbl.querySelector("input[type='radio']");
+        if (r && r.checked) {
+          lbl.classList.add("border-emerald-500", "bg-emerald-50/50", "ring-2", "ring-emerald-400");
+          lbl.classList.remove("border-slate-200", "bg-white");
+        } else if (r) {
+          lbl.classList.remove("border-emerald-500", "bg-emerald-50/50", "ring-2", "ring-emerald-400");
+          lbl.classList.add("border-slate-200", "bg-white");
+        }
+      });
+    }
 
     function showToast(message, type = "success") {
       const toast = document.getElementById("toastNotification");
@@ -2322,6 +3320,168 @@
         document.getElementById("gasUrlInput").value = DEFAULT_GAS_URL;
         loadDataFromSpreadsheet();
         showToast("デフォルトURLに復元しました");
+      });
+
+      /* ==========================================================================
+         排便管理・ナビゲーション タブ イベントリスナー登録
+         ========================================================================== */
+      initBowelMonthSelect();
+
+      // ナビゲーションタブ切替（体重・栄養管理 ⇄ 排便・下剤管理）
+      const navTabWeight = document.getElementById("navTabWeight");
+      const navTabBowel = document.getElementById("navTabBowel");
+      const weightView = document.getElementById("weightManagementView");
+      const bowelView = document.getElementById("bowelManagementView");
+
+      function switchModuleTab(target) {
+        if (target === "bowel") {
+          weightView.classList.add("hidden");
+          bowelView.classList.remove("hidden");
+          navTabBowel.className = "nav-module-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition shadow-sm bg-emerald-800 text-white shadow-emerald-900/10 active:scale-95";
+          navTabWeight.className = "nav-module-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 active:scale-95";
+          renderBowelMatrix();
+        } else {
+          bowelView.classList.add("hidden");
+          weightView.classList.remove("hidden");
+          navTabWeight.className = "nav-module-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition shadow-sm bg-emerald-800 text-white shadow-emerald-900/10 active:scale-95";
+          navTabBowel.className = "nav-module-btn px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition bg-white text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 active:scale-95";
+          renderMainTable();
+        }
+        if (window.lucide) lucide.createIcons();
+      }
+
+      navTabWeight.addEventListener("click", () => switchModuleTab("weight"));
+      navTabBowel.addEventListener("click", () => switchModuleTab("bowel"));
+
+      // 排便月選択イベント
+      const bowelMonthSelect = document.getElementById("bowelMonthSelect");
+      if (bowelMonthSelect) {
+        bowelMonthSelect.addEventListener("change", (e) => {
+          currentBowelMonth = e.target.value;
+          renderBowelMatrix();
+        });
+      }
+
+      // 排便フロア切替
+      document.querySelectorAll(".bowel-floor-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".bowel-floor-btn").forEach(b => {
+            b.classList.remove("bg-white", "text-emerald-800", "shadow-sm");
+            b.classList.add("text-slate-600");
+          });
+          btn.classList.add("bg-white", "text-emerald-800", "shadow-sm");
+          btn.classList.remove("text-slate-600");
+          activeBowelFloor = btn.dataset.floor;
+          renderBowelMatrix();
+        });
+      });
+
+      // 排便フィルタータブ
+      document.querySelectorAll(".bowel-filter-tab").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".bowel-filter-tab").forEach(b => {
+            b.classList.remove("bg-white", "text-emerald-800", "shadow-sm");
+            b.classList.add("text-slate-600");
+          });
+          btn.classList.add("bg-white", "text-emerald-800", "shadow-sm");
+          btn.classList.remove("text-slate-600");
+          activeBowelFilter = btn.dataset.bowelFilter;
+          renderBowelMatrix();
+        });
+      });
+
+      // KPIカードクリックによるクイック絞込
+      document.getElementById("bowelCard3DaysAlert")?.addEventListener("click", () => {
+        activeBowelFilter = "alert";
+        updateBowelFilterTabUI("alert");
+        renderBowelMatrix();
+      });
+      document.getElementById("bowelCard2DaysAlert")?.addEventListener("click", () => {
+        activeBowelFilter = "alert";
+        updateBowelFilterTabUI("alert");
+        renderBowelMatrix();
+      });
+      document.getElementById("bowelCardMedsAlert")?.addEventListener("click", () => {
+        activeBowelFilter = "meds";
+        updateBowelFilterTabUI("meds");
+        renderBowelMatrix();
+      });
+
+      function updateBowelFilterTabUI(filterVal) {
+        document.querySelectorAll(".bowel-filter-tab").forEach(b => {
+          if (b.dataset.bowelFilter === filterVal) {
+            b.classList.add("bg-white", "text-emerald-800", "shadow-sm");
+            b.classList.remove("text-slate-600");
+          } else {
+            b.classList.remove("bg-white", "text-emerald-800", "shadow-sm");
+            b.classList.add("text-slate-600");
+          }
+        });
+      }
+
+      // 単一排便モーダル
+      document.getElementById("closeSingleBowelModalBtn")?.addEventListener("click", () => {
+        document.getElementById("singleBowelModal").classList.add("hidden");
+      });
+      document.getElementById("cancelSingleBowelBtn")?.addEventListener("click", () => {
+        document.getElementById("singleBowelModal").classList.add("hidden");
+      });
+      document.getElementById("singleBowelForm")?.addEventListener("submit", saveSingleBowelRecord);
+      document.getElementById("clearSingleBowelBtn")?.addEventListener("click", clearSingleBowelRecord);
+
+      // 単一排便モーダルのラジオボタン変更時連動
+      document.querySelectorAll("input[name='singleBowelType']").forEach(radio => {
+        radio.addEventListener("change", (e) => {
+          updateBowelTypeRadioStyle(e.target);
+          const countSec = document.getElementById("singleBowelCountSection");
+          if (countSec) countSec.style.display = (e.target.value === "small") ? "block" : "none";
+        });
+      });
+
+      // 頓服薬プリセット選択連動
+      document.getElementById("singleBowelMedPreset")?.addEventListener("change", (e) => {
+        const val = e.target.value;
+        const input = document.getElementById("singleBowelMedInput");
+        if (input && val) {
+          input.value = val;
+        }
+      });
+
+      // 日別一括入力モーダル
+      document.getElementById("openBatchBowelBtn")?.addEventListener("click", openBatchBowelModal);
+      document.getElementById("closeBatchBowelModalBtn")?.addEventListener("click", () => {
+        document.getElementById("batchBowelModal").classList.add("hidden");
+      });
+      document.getElementById("cancelBatchBowelModalBtn")?.addEventListener("click", () => {
+        document.getElementById("batchBowelModal").classList.add("hidden");
+      });
+      document.getElementById("saveBatchBowelModalBtn")?.addEventListener("click", saveBatchBowelInputs);
+
+      // 一括モーダル内の日付変更時リスナー
+      document.getElementById("batchBowelDateInput")?.addEventListener("change", renderBatchBowelRows);
+
+      // 一括設定ボタン（全員普通便 / 全員なし）
+      document.getElementById("batchBowelSetAllNormalBtn")?.addEventListener("click", () => {
+        const tbody = document.getElementById("batchBowelTableBody");
+        tbody.querySelectorAll("input[type='radio'][value='normal']").forEach(radio => {
+          radio.checked = true;
+          radio.dispatchEvent(new Event("change"));
+        });
+        showToast("未入力者を「〇普通便」に設定しました", "info");
+      });
+
+      document.getElementById("batchBowelSetAllNoneBtn")?.addEventListener("click", () => {
+        const tbody = document.getElementById("batchBowelTableBody");
+        tbody.querySelectorAll("input[type='radio'][value='none']").forEach(radio => {
+          radio.checked = true;
+          radio.dispatchEvent(new Event("change"));
+        });
+        showToast("未入力者を「排便なし」に設定しました", "info");
+      });
+
+      // 台帳印刷ボタン
+      document.getElementById("printBowelSheetBtn")?.addEventListener("click", () => {
+        window.print();
       });
     });
   </script>
